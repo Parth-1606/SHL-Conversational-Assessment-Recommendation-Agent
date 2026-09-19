@@ -3,47 +3,169 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SHL Assessment Assistant</title>
-    <link rel="stylesheet" href="/static/style.css">
-    <!-- Modern Font -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <!-- Icons -->
+    <title>SHL — Assessment Recommendation Console</title>
+    <link rel="stylesheet" href="/static/style.css?v=3">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,500;8..60,600&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
 </head>
 <body>
-    <div class="chat-container">
-        <!-- Header -->
-        <header class="chat-header">
-            <div class="logo">
-                <div class="logo-icon"><i class="ri-brain-line"></i></div>
-                <div>
-                    <h1>SHL Assessment AI</h1>
-                    <span class="status"><span class="dot"></span> Online</span>
-                </div>
+<div class="app">
+
+    <!-- ============ LEFT RAIL ============ -->
+    <aside class="sidebar" id="sidebar">
+        <div class="brand">
+            <div class="brand-mark"><i class="ri-asterisk"></i></div>
+            <div>
+                <div class="brand-name">SHL Console</div>
+                <div class="brand-sub">Talent assessments</div>
             </div>
-            <button class="settings-btn"><i class="ri-settings-4-line"></i></button>
+            <button class="icon-btn sidebar-close" id="sidebar-close" title="Close sidebar"><i class="ri-close-line"></i></button>
+        </div>
+
+        <div class="side-pad">
+            <button class="new-chat-btn" id="new-chat-btn"><i class="ri-edit-box-line"></i> New assessment search</button>
+        </div>
+
+        <div class="side-section">
+            <div class="side-label">Starter queries</div>
+            <div class="quick-list" id="quick-list">
+                <button class="quick-item" data-prompt="I need a coding test for Java developers with 60 minutes duration."><i class="ri-code-s-slash-line"></i>Java developer, 60 min</button>
+                <button class="quick-item" data-prompt="Compare Verify G+ and OPQ32 for leadership hiring."><i class="ri-scales-3-line"></i>Compare G+ vs OPQ32</button>
+                <button class="quick-item" data-prompt="Show me remote-friendly assessments for customer service roles."><i class="ri-home-wifi-line"></i>Remote · customer service</button>
+                <button class="quick-item" data-prompt="I need a short behavioral test under 30 minutes for entry level staff."><i class="ri-timer-line"></i>Behavioral, under 30 min</button>
+                <button class="quick-item" data-prompt="What is the best assessment for spoken English and BPO hiring?"><i class="ri-mic-line"></i>Spoken English · BPO</button>
+            </div>
+        </div>
+
+        <div class="side-section grow">
+            <div class="side-label row">Recents <span class="count-pill" id="session-count">1</span></div>
+            <div class="session-list" id="session-list"></div>
+        </div>
+
+        <div class="side-footer">
+            <div class="health-card" id="health-card">
+                <span class="dot" id="health-dot"></span>
+                <div>
+                    <div class="health-title" id="health-title">Connecting…</div>
+                    <div class="health-sub" id="health-sub">Checking service status</div>
+                </div>
+                <button class="icon-btn sm" id="health-refresh" title="Refresh status"><i class="ri-refresh-line"></i></button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- ============ MAIN ============ -->
+    <main class="main">
+        <header class="topbar">
+            <button class="icon-btn" id="sidebar-toggle" title="Toggle sidebar"><i class="ri-side-bar-line"></i></button>
+            <div class="model-pill" title="Retrieval source"><i class="ri-database-2-line"></i> SHL catalog · grounded answers</div>
+            <div class="kpis">
+                <span><b id="stat-total">–</b> assessments</span><i>·</i>
+                <span><b id="stat-remote">–</b> remote-ready</span><i>·</i>
+                <span><b id="stat-adaptive">–</b> adaptive</span>
+            </div>
+            <div class="topbar-actions">
+                <button class="tool-btn" id="shortlist-toggle" title="Open shortlist"><i class="ri-bookmark-line"></i><span id="shortlist-count">0</span></button>
+                <button class="tool-btn" id="export-btn" title="Export conversation"><i class="ri-download-line"></i></button>
+                <button class="tool-btn" id="clear-btn" title="Clear conversation"><i class="ri-delete-bin-line"></i></button>
+                <button class="tool-btn panel-btn" id="panel-toggle" title="Toggle details panel"><i class="ri-layout-right-line"></i></button>
+            </div>
         </header>
 
-        <!-- Chat Area -->
-        <main class="chat-box" id="chat-box">
-            <!-- Initial Greeting -->
-            <div class="message bot">
-                <div class="avatar"><i class="ri-robot-2-line"></i></div>
-                <div class="content">
-                    <p>Hello! I am your SHL Assessment Recommendation Agent. Tell me what kind of test you're looking for, or ask me to compare some tests!</p>
+        <section class="chat-scroll" id="chat-scroll">
+            <div class="chat-box" id="chat-box"></div>
+
+            <div class="welcome" id="empty-state">
+                <div class="welcome-mark"><i class="ri-asterisk"></i></div>
+                <h2>Which role are you hiring for?</h2>
+                <p class="welcome-sub">Recommendations are retrieved from the SHL catalog first — every suggestion links back to a real test record.</p>
+                <div class="prompt-grid" id="hero-chips">
+                    <button class="prompt-card" data-prompt="Recommend a cognitive ability test for software engineers."><b>Cognitive test</b><span>Software engineers · reasoning ability</span></button>
+                    <button class="prompt-card" data-prompt="Compare OPQ32 and Situational Judgement Test for managers."><b>Compare two tests</b><span>OPQ32 vs SJT · people managers</span></button>
+                    <button class="prompt-card" data-prompt="I need a 20 minute remote test for retail staff."><b>Quick screen</b><span>Retail · 20 min · remote</span></button>
+                    <button class="prompt-card" data-prompt="What is the best assessment for spoken English and BPO hiring?"><b>Language check</b><span>BPO · spoken English</span></button>
                 </div>
             </div>
-        </main>
+        </section>
 
-        <!-- Input Area -->
-        <footer class="chat-input-area">
-            <form id="chat-form">
-                <input type="text" id="user-input" placeholder="Type your message here..." autocomplete="off" required>
-                <button type="submit" id="send-btn"><i class="ri-send-plane-fill"></i></button>
-            </form>
+        <div class="followups" id="followups"></div>
+
+        <footer class="composer">
+            <div class="composer-box">
+                <textarea id="user-input" rows="1" placeholder="Ask about a role, skill, duration, or delivery mode…"></textarea>
+                <div class="composer-side">
+                    <span class="char-count" id="char-count">0</span>
+                    <button id="send-btn" title="Send"><i class="ri-arrow-up-line"></i></button>
+                </div>
+            </div>
+            <div class="composer-hint"><span id="stat-msgs">0</span> messages · grounded in catalog records · sources linked to shl.com</div>
         </footer>
+    </main>
+
+    <!-- ============ ARTIFACT PANEL ============ -->
+    <aside class="panel" id="panel">
+        <div class="panel-head">
+            <div class="tabs">
+                <button class="tab active" data-tab="catalog">Catalog</button>
+                <button class="tab" data-tab="compare">Compare <span id="compare-count">0</span></button>
+                <button class="tab" data-tab="shortlist">Shortlist</button>
+                <button class="tab" data-tab="guide">Help</button>
+            </div>
+        </div>
+
+        <div class="tab-page active" id="tab-catalog">
+            <div class="panel-search">
+                <i class="ri-search-line"></i>
+                <input id="catalog-search" placeholder="Search name, skill, or job role">
+            </div>
+            <div class="filter-chips" id="type-filters"></div>
+            <div class="catalog-list" id="catalog-list"></div>
+        </div>
+
+        <div class="tab-page" id="tab-compare">
+            <div class="panel-hint">Select up to 3 assessments with <b>Compare</b> to view them side by side.</div>
+            <div id="compare-table-wrap"></div>
+            <button class="btn-quiet" id="clear-compare">Clear comparison</button>
+        </div>
+
+        <div class="tab-page" id="tab-shortlist">
+            <div class="panel-hint">Saved assessments for review with hiring managers. Stored in this browser.</div>
+            <div class="catalog-list" id="shortlist-list"></div>
+            <div class="row-actions">
+                <button class="btn-quiet" id="export-shortlist"><i class="ri-download-line"></i> Export shortlist</button>
+                <button class="btn-quiet danger" id="clear-shortlist">Clear shortlist</button>
+            </div>
+        </div>
+
+        <div class="tab-page" id="tab-guide">
+            <div class="guide-card">
+                <h3>Example queries</h3>
+                <ul>
+                    <li><b>Recommend</b> — Backend developers, Java and algorithms, 60 minutes, remote</li>
+                    <li><b>Compare</b> — Verify G+ with OPQ32 for senior hires</li>
+                    <li><b>Refine</b> — Limit to remote-friendly options under 30 minutes</li>
+                </ul>
+            </div>
+            <div class="guide-card">
+                <h3>How it works</h3>
+                <p>Matches are retrieved from the catalog database before any explanation is written, so names, links and test types always match a catalog record.</p>
+            </div>
+            <div class="guide-card">
+                <h3>Endpoints</h3>
+                <code>POST /chat · GET /catalog · GET /health</code>
+            </div>
+        </div>
+    </aside>
+</div>
+
+<div class="modal-backdrop" id="modal-backdrop">
+    <div class="modal" id="modal">
+        <button class="icon-btn sm modal-close" id="modal-close"><i class="ri-close-line"></i></button>
+        <div id="modal-body"></div>
     </div>
-    
-    <script src="/static/app.js"></script>
+</div>
+
+<div class="toast" id="toast"></div>
+<script src="/static/app.js?v=3"></script>
 </body>
 </html>

@@ -8,6 +8,7 @@ from fastapi.responses import FileResponse
 
 from app.api.health import router as health_router
 from app.api.chat import router as chat_router
+from app.api.catalog import router as catalog_router
 
 # Configure startup logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
@@ -36,6 +37,7 @@ def create_app() -> FastAPI:
     # Include API Routers
     app.include_router(health_router, tags=["Health"])
     app.include_router(chat_router, tags=["Chat"])
+    app.include_router(catalog_router, tags=["Catalog"])
 
     # Serve the frontend index.html at the root
     @app.get("/", include_in_schema=False)
